@@ -1,0 +1,218 @@
+import java.awt.*;
+import java.awt.event.*;
+
+public class MovieTicketBookingSystem {
+    
+    // Declare components
+    Frame frame;
+    Label lblMovie, lblTickets, lblTime, lblSeats, lblTotal;
+    Choice movieChoice, timeChoice;
+    TextField ticketField, totalField;
+    Button btnCalculate, btnBook, btnReset, btnExit;
+    Button[][] seats;  // 2D array to represent seats
+    int selectedSeatsCount = 0;
+    int seatPrice = 10;  // Default price per seat (can be dynamic based on the movie)
+    
+    public MovieTicketBookingSystem() {
+        // Create the frame
+        frame = new Frame("Movie Ticket Booking System");
+
+        // Create labels
+        lblMovie = new Label("Select Movie:");
+        lblTickets = new Label("Number of Tickets:");
+        lblTime = new Label("Select Time Slot:");
+        lblSeats = new Label("Select Seats:");
+        lblTotal = new Label("Total Amount:");
+
+        // Create choices (dropdowns) for movie selection and time
+        movieChoice = new Choice();
+        // Add movie names with their respective prices to the dropdown
+        movieChoice.add("Movie 1: The Avengers - $100");
+        movieChoice.add("Movie 2: Spider-Man - $150");
+        movieChoice.add("Movie 3: Batman - $200");
+        movieChoice.add("Movie 4: Iron Man - $250");
+        movieChoice.add("Movie 5: Captain America - $300");
+
+        timeChoice = new Choice();
+        timeChoice.add("Morning (9:00 AM)");
+        timeChoice.add("Afternoon (1:00 PM)");
+        timeChoice.add("Evening (6:00 PM)");
+
+        // Create text fields for ticket count and total amount
+        ticketField = new TextField();
+        totalField = new TextField();
+        totalField.setEditable(false); // Total should not be editable
+
+        // Create buttons for calculation, booking, reset, and exit
+        btnCalculate = new Button("Calculate");
+        btnBook = new Button("Book Tickets");
+        btnReset = new Button("Reset");
+        btnExit = new Button("Exit");
+
+        // Create a panel for seat selection (grid layout)
+        Panel seatPanel = new Panel(new GridLayout(5, 5, 5, 5)); // 5x5 grid of seats
+        seats = new Button[5][5]; // Create a 5x5 array of buttons for the seats
+
+        // Initialize the seat buttons and add them to the seat panel
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                seats[i][j] = new Button("Seat " + (i * 5 + j + 1));
+                seats[i][j].setBackground(Color.GREEN);  // Green indicates available
+                seats[i][j].addActionListener(new SeatSelectionHandler(i, j));
+                seatPanel.add(seats[i][j]);
+            }
+        }
+
+        // Set Layout for the frame
+        frame.setLayout(new FlowLayout());
+
+        // Add components to the frame
+        frame.add(lblMovie);
+        frame.add(movieChoice);
+        frame.add(lblTickets);
+        frame.add(ticketField);
+        frame.add(lblTime);
+        frame.add(timeChoice);
+        frame.add(lblSeats);
+        frame.add(seatPanel);
+        frame.add(lblTotal);
+        frame.add(totalField);
+        frame.add(btnCalculate);
+        frame.add(btnBook);
+        frame.add(btnReset);
+        frame.add(btnExit);
+
+        // Set size and visibility of the frame
+        frame.setSize(500, 450);
+        frame.setVisible(true);
+
+        // Add event listeners
+        btnCalculate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                calculateTotal();
+            }
+        });
+
+        btnBook.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                bookTickets();
+            }
+        });
+
+        btnReset.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                resetSeatSelection();
+            }
+        });
+
+        btnExit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);  // Exit the application
+            }
+        });
+
+        // Close the frame when the user closes the window
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+
+    // Method to handle seat selection/deselection
+    class SeatSelectionHandler implements ActionListener {
+        int row, col;
+
+        // Constructor
+        SeatSelectionHandler(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Button seatButton = seats[row][col];
+            if (seatButton.getBackground() == Color.GREEN) {
+                // If the seat is available, select it
+                seatButton.setBackground(Color.RED);  // Red indicates selected
+                selectedSeatsCount++;
+            } else {
+                // If the seat is already selected, deselect it
+                seatButton.setBackground(Color.GREEN);  // Green indicates available
+                selectedSeatsCount--;
+            }
+            // Update the number of tickets in the text field
+            ticketField.setText(String.valueOf(selectedSeatsCount));
+        }
+    }
+
+    // Method to calculate the total cost based on the selected seats
+    public void calculateTotal() {
+        try {
+            int ticketCount = Integer.parseInt(ticketField.getText());
+            String selectedMovie = movieChoice.getSelectedItem();
+            int price = 0;
+
+            // Extract price based on selected movie
+            if (selectedMovie.contains("$100")) {
+                price = 100;
+            } else if (selectedMovie.contains("$150")) {
+                price = 150;
+            } else if (selectedMovie.contains("$200")) {
+                price = 200;
+            } else if (selectedMovie.contains("$250")) {
+                price = 250;
+            } else if (selectedMovie.contains("$300")) {
+                price = 300;
+            }
+
+            // Calculate total
+            int total = ticketCount * price;
+            totalField.setText("$" + total);
+        } catch (NumberFormatException e) {
+            totalField.setText("Invalid input");
+        }
+    }
+
+    // Method to simulate ticket booking
+    public void bookTickets() {
+        String selectedMovie = movieChoice.getSelectedItem();
+        String selectedTime = timeChoice.getSelectedItem();
+        String tickets = ticketField.getText();
+        String total = totalField.getText();
+
+        if (tickets.isEmpty() || total.isEmpty() || total.equals("Invalid input")) {
+            totalField.setText("Please fill in all fields!");
+        } else {
+            // Simulate booking by showing a confirmation message
+            Dialog bookingConfirmation = new Dialog(frame, "Booking Confirmation", true);
+            bookingConfirmation.setLayout(new FlowLayout());
+            bookingConfirmation.setSize(300, 150);
+            Label confirmationMessage = new Label("Booking Confirmed for " + selectedMovie + " at " + selectedTime);
+            bookingConfirmation.add(confirmationMessage);
+            bookingConfirmation.setVisible(true);
+
+            // Reset seat selection and ticket count
+            resetSeatSelection();
+        }
+    }
+
+    // Method to reset the seat selection
+    public void resetSeatSelection() {
+        selectedSeatsCount = 0;
+        ticketField.setText("");
+        totalField.setText("");
+        
+        // Reset seat buttons to available
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (seats[i][j].getBackground() == Color.RED) {
+                    seats[i][j].setBackground(Color.GREEN);  // Reset to available
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        new MovieTicketBookingSystem();
+    }
+}
